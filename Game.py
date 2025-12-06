@@ -38,10 +38,11 @@ class Game:
             row = 1
             col = 1
             for card in self.cards:
+                card.rect = card.img.get_rect(center=(self.SCREEN_WIDTH // 5 * row, self.SCREEN_HEIGHT // 4 * col - 80 + (40 * col)))
                 if card.is_flipped:
-                    self.window.blit(card.img, card.img.get_rect(center=(self.SCREEN_WIDTH // 5 * row, self.SCREEN_HEIGHT // 4 * col - 80 + (40 * col))))
+                    self.window.blit(card.img, card.rect)
                 else:
-                    self.window.blit(self.back_card.img, card.img.get_rect(center=(self.SCREEN_WIDTH // 5 * row, self.SCREEN_HEIGHT // 4 * col - 80 + (40 * col))))
+                    self.window.blit(self.back_card.img, card.rect)
                 col += 1
                 if col == 4:
                     col = 1
@@ -82,29 +83,27 @@ class Game:
             self.window.blit(exit_text, exit_text.get_rect(center=self.exit_btn_rect.center))
 
     def create_cards(self):
-        cards = [
-            get_resource_path("./assets/Images/Apple.png"),
-            get_resource_path("./assets/Images/Grape.png"),
-            get_resource_path("./assets/Images/Lime.png"),
-            get_resource_path("./assets/Images/Orange.png"),
-            get_resource_path("./assets/Images/Strawberry.png"),
-            get_resource_path("./assets/Images/Watermelon.png")
-        ]
+        cards = ["Apple", "Grape", "Lime", "Orange", "Strawberry", "Watermelon"]
 
         for card in cards:
-            self.cards.append(Card(card))
+            self.cards.append(Card(card, get_resource_path(f"./assets/Images/{card}.png")))
+            self.cards.append(Card(card, get_resource_path(f"./assets/Images/{card}.png")))
         
-        self.cards = self.cards * 2
         random.shuffle(self.cards)
 
-        self.back_card = Card(get_resource_path("./assets/Images/Back-View.png"))
+        self.back_card = Card("Cover", get_resource_path("./assets/Images/Back-View.png"))
 
     def handle_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.quit_game()
             elif self.is_game_started:
-                pass
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    click_point = pg.mouse.get_pos()
+                    for card in self.cards:
+                        if card.rect.collidepoint(click_point):
+                            if not card.is_flipped:
+                                card.flip_card()
             else:
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if self.play_btn_rect.collidepoint(pg.mouse.get_pos()):
