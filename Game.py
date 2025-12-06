@@ -1,5 +1,6 @@
 import pygame as pg
-import sys
+import sys, random
+from Card import Card
 from utils import get_resource_path
 
 class Game:
@@ -10,14 +11,16 @@ class Game:
 
         self.running = True
         self.is_game_started = False
+        self.cards = []
+        self.back_card = None
 
         self.clock = pg.time.Clock()
-        self.primary_font = pg.font.Font(get_resource_path(r"./assets/CaveatBrush.ttf"), 28)
-        self.secondary_font = pg.font.Font(get_resource_path(r"./assets/CaveatBrush.ttf"), 18)
+        self.primary_font = pg.font.Font(get_resource_path("./assets/Font/CaveatBrush.ttf"), 28)
+        self.secondary_font = pg.font.Font(get_resource_path("./assets/Font/CaveatBrush.ttf"), 18)
 
         # Images
-        self.logo = pg.image.load(get_resource_path(r"./assets/Logo.png"))
-        self.bg = pg.transform.rotate(pg.transform.scale_by(pg.image.load(get_resource_path(r"./assets/Game-BG.png")), 0.5), 90.0)
+        self.logo = pg.image.load(get_resource_path("./assets/Images/Logo.png"))
+        self.bg = pg.transform.rotate(pg.transform.scale_by(pg.image.load(get_resource_path("./assets/Images/Game-BG.png")), 0.5), 90.0)
 
         # Function calls
         self.create_window()
@@ -32,7 +35,17 @@ class Game:
         self.window.blit(self.bg, (0,0))
 
         if self.is_game_started:
-            pass
+            row = 1
+            col = 1
+            for card in self.cards:
+                if card.is_flipped:
+                    self.window.blit(card.img, card.img.get_rect(center=(self.SCREEN_WIDTH // 5 * row, self.SCREEN_HEIGHT // 4 * col - 80 + (40 * col))))
+                else:
+                    self.window.blit(self.back_card.img, card.img.get_rect(center=(self.SCREEN_WIDTH // 5 * row, self.SCREEN_HEIGHT // 4 * col - 80 + (40 * col))))
+                col += 1
+                if col == 4:
+                    col = 1
+                    row += 1
         else:
             # Logo
             logo = pg.transform.scale_by(self.logo, 0.5)
@@ -68,6 +81,24 @@ class Game:
             self.window.blit(play_text, play_text.get_rect(center=self.play_btn_rect.center))
             self.window.blit(exit_text, exit_text.get_rect(center=self.exit_btn_rect.center))
 
+    def create_cards(self):
+        cards = [
+            get_resource_path("./assets/Images/Apple.png"),
+            get_resource_path("./assets/Images/Grape.png"),
+            get_resource_path("./assets/Images/Lime.png"),
+            get_resource_path("./assets/Images/Orange.png"),
+            get_resource_path("./assets/Images/Strawberry.png"),
+            get_resource_path("./assets/Images/Watermelon.png")
+        ]
+
+        for card in cards:
+            self.cards.append(Card(card))
+        
+        self.cards = self.cards * 2
+        random.shuffle(self.cards)
+
+        self.back_card = Card(get_resource_path("./assets/Images/Back-View.png"))
+
     def handle_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -78,6 +109,7 @@ class Game:
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if self.play_btn_rect.collidepoint(pg.mouse.get_pos()):
                         self.is_game_started = True
+                        self.create_cards()
                         return
                     if self.exit_btn_rect.collidepoint(pg.mouse.get_pos()):
                         self.quit_game()
