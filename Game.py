@@ -11,13 +11,14 @@ class Game:
 
         self.running = True
         self.is_game_started = False
+        self.is_game_ended = False
         self.cards = []
         self.back_card = None
         self.flip_count = 0
+        self.cards_fipped = 0
 
         self.clock = pg.time.Clock()
-        self.primary_font = pg.font.Font(get_resource_path("./assets/Font/CaveatBrush.ttf"), 28)
-        self.secondary_font = pg.font.Font(get_resource_path("./assets/Font/CaveatBrush.ttf"), 18)
+        self.font = pg.font.Font(get_resource_path("./assets/Font/CaveatBrush.ttf"), 28)
 
         # Images
         self.logo = pg.image.load(get_resource_path("./assets/Images/Logo.png"))
@@ -48,14 +49,68 @@ class Game:
                 if col == 4:
                     col = 1
                     row += 1
+
+            if self.is_game_ended:
+                dialog_width = 300
+                dialog_height = 200
+                dialog_rect = pg.Rect(
+                    (self.SCREEN_WIDTH // 2) - (dialog_width // 2),
+                    (self.SCREEN_HEIGHT // 2) - (dialog_height // 2),
+                    dialog_width,
+                    dialog_height
+                )
+                dialog_box_rect = pg.draw.rect(
+                    self.window,
+                    (200, 200, 225),
+                    dialog_rect,
+                    border_radius=5
+                )
+                
+                won_text = self.font.render("You Won", True, (0, 180, 0))
+                play_again_text = self.font.render("Play Again", True, (0, 0, 0))
+                home_text = self.font.render("Back", True, (0, 0, 0))
+                
+                btn_width = 200
+                btn_height = 50
+                
+                play_again_rect = pg.Rect(
+                    (self.SCREEN_WIDTH // 2) - (btn_width // 2),
+                    (self.SCREEN_HEIGHT // 2) - (btn_height // 2),
+                    btn_width,
+                    btn_height
+                )
+                home_rect = pg.Rect(
+                    (self.SCREEN_WIDTH // 2) - (btn_width // 2),
+                    (self.SCREEN_HEIGHT // 2) - (btn_height // 2) + play_again_rect.height + 10,
+                    btn_width,
+                    btn_height
+                )
+
+                self.play_again_btn_rect = pg.draw.rect(
+                    self.window,
+                    (0, 255, 0),
+                    play_again_rect,
+                    border_radius=20
+                )
+                self.home_btn_rect = pg.draw.rect(
+                    self.window,
+                    (255, 0, 0),
+                    home_rect,
+                    border_radius=20
+                )
+
+                self.window.blit(won_text, (dialog_box_rect.x + dialog_box_rect.width // 2 - won_text.get_width() // 2, dialog_box_rect.y + 20))
+                self.window.blit(play_again_text, play_again_text.get_rect(center=self.play_again_btn_rect.center))
+                self.window.blit(home_text, home_text.get_rect(center=self.home_btn_rect.center))
+
         else:
             # Logo
             logo = pg.transform.scale_by(self.logo, 0.5)
             self.window.blit(logo, ((self.SCREEN_WIDTH // 2) - (logo.get_width() // 2), (self.SCREEN_HEIGHT // 2) - (logo.get_height() // 2) - 130))
 
             # Menu Texts
-            play_text = self.primary_font.render("Play", True, (0, 0, 0))
-            exit_text = self.primary_font.render("Exit", True, (0, 0, 0))
+            play_text = self.font.render("Play", True, (0, 0, 0))
+            exit_text = self.font.render("Exit", True, (0, 0, 0))
 
             # Buttons Dimensions
             btn_width = 200
@@ -99,11 +154,35 @@ class Game:
             if self.card1.card_name == self.card2.card_name:
                 self.flip_count = 0
                 self.flip_timer = None
+                self.cards_fipped += 2
+                self.check_win()
                 return
-            elif pg.time.get_ticks() - self.flip_timer >= 1000:
+            elif pg.time.get_ticks() - self.flip_timer >= 500:
                 self.card1.flip_card()
                 self.card2.flip_card()
                 self.flip_count = 0
+
+    def check_win(self):
+        if not self.cards_fipped == len(self.cards):
+            return
+        self.is_game_ended = True
+
+    def reset_game(self):
+        self.is_game_started = True
+        self.is_game_ended = False
+        self.cards = []
+        self.back_card = None
+        self.flip_count = 0
+        self.cards_fipped = 0
+        self.create_cards()
+
+    def back_home(self):
+        self.is_game_started = False
+        self.is_game_ended = False
+        self.cards = []
+        self.back_card = None
+        self.flip_count = 0
+        self.cards_fipped = 0
 
     def handle_events(self):
         for event in pg.event.get():
@@ -122,6 +201,14 @@ class Game:
                                 if self.flip_count == 2:
                                     self.card2 = card
                                     self.flip_timer = pg.time.get_ticks()
+                if self.is_game_ended:
+                    if event.type == pg.MOUSEBUTTONDOWN:
+                        if self.play_again_btn_rect.collidepoint(pg.mouse.get_pos()):
+                            self.reset_game()
+                            return
+                        if self.home_btn_rect.collidepoint(pg.mouse.get_pos()):
+                            self.back_home()
+                            return
             else:
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if self.play_btn_rect.collidepoint(pg.mouse.get_pos()):
