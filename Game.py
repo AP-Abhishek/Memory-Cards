@@ -12,6 +12,8 @@ class Game:
         self.is_game_started = False
 
         self.clock = pg.time.Clock()
+        self.primary_font = pg.font.Font(get_resource_path(r"./assets/CaveatBrush.ttf"), 28)
+        self.secondary_font = pg.font.Font(get_resource_path(r"./assets/CaveatBrush.ttf"), 18)
 
         # Images
         self.logo = pg.image.load(get_resource_path(r"./assets/Logo.png"))
@@ -29,10 +31,56 @@ class Game:
     def handle_blit(self):
         self.window.blit(self.bg, (0,0))
 
+        if self.is_game_started:
+            pass
+        else:
+            # Logo
+            logo = pg.transform.scale_by(self.logo, 0.5)
+            self.window.blit(logo, ((self.SCREEN_WIDTH // 2) - (logo.get_width() // 2), (self.SCREEN_HEIGHT // 2) - (logo.get_height() // 2) - 130))
+
+            # Menu Texts
+            play_text = self.primary_font.render("Play", True, (0, 0, 0))
+            exit_text = self.primary_font.render("Exit", True, (0, 0, 0))
+
+            # Buttons Dimensions
+            btn_width = 200
+            btn_height = 50
+
+            # Button Rects
+            play_rect = pg.Rect(
+                (self.SCREEN_WIDTH // 2) - (btn_width // 2),
+                (self.SCREEN_HEIGHT // 2) - (btn_height // 2) + 20,
+                btn_width,
+                btn_height
+            )
+            exit_rect = pg.Rect(
+                (self.SCREEN_WIDTH // 2) - (btn_width // 2),
+                (self.SCREEN_HEIGHT // 2) - (btn_height // 2) + play_rect.height + 40,
+                btn_width,
+                btn_height
+            )
+
+            # Drawing Rects
+            self.play_btn_rect = pg.draw.rect(self.window, (0, 225, 0), play_rect, border_radius=20)
+            self.exit_btn_rect = pg.draw.rect(self.window, (225, 0, 0), exit_rect, border_radius=20)
+
+            # Bliting Rects
+            self.window.blit(play_text, play_text.get_rect(center=self.play_btn_rect.center))
+            self.window.blit(exit_text, exit_text.get_rect(center=self.exit_btn_rect.center))
+
     def handle_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.quit_game()
+            elif self.is_game_started:
+                pass
+            else:
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    if self.play_btn_rect.collidepoint(pg.mouse.get_pos()):
+                        self.is_game_started = True
+                        return
+                    if self.exit_btn_rect.collidepoint(pg.mouse.get_pos()):
+                        self.quit_game()
 
     def mainloop(self):
         while self.running:
