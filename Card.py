@@ -8,4 +8,4 @@ class Card:
         self.is_flipped = False
 
     def flip_card(self):
-        self.is_flipped = True
+        self.is_flipped = not self.is_flipped

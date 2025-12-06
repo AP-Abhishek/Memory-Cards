@@ -13,6 +13,7 @@ class Game:
         self.is_game_started = False
         self.cards = []
         self.back_card = None
+        self.flip_count = 0
 
         self.clock = pg.time.Clock()
         self.primary_font = pg.font.Font(get_resource_path("./assets/Font/CaveatBrush.ttf"), 28)
@@ -93,6 +94,17 @@ class Game:
 
         self.back_card = Card("Cover", get_resource_path("./assets/Images/Back-View.png"))
 
+    def check_flips(self):
+        if self.flip_count == 2:
+            if self.card1.card_name == self.card2.card_name:
+                self.flip_count = 0
+                self.flip_timer = None
+                return
+            elif pg.time.get_ticks() - self.flip_timer >= 1000:
+                self.card1.flip_card()
+                self.card2.flip_card()
+                self.flip_count = 0
+
     def handle_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -102,8 +114,14 @@ class Game:
                     click_point = pg.mouse.get_pos()
                     for card in self.cards:
                         if card.rect.collidepoint(click_point):
-                            if not card.is_flipped:
+                            if not card.is_flipped and self.flip_count < 2:
                                 card.flip_card()
+                                self.flip_count += 1
+                                if self.flip_count == 1:
+                                    self.card1 = card
+                                if self.flip_count == 2:
+                                    self.card2 = card
+                                    self.flip_timer = pg.time.get_ticks()
             else:
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if self.play_btn_rect.collidepoint(pg.mouse.get_pos()):
@@ -118,6 +136,7 @@ class Game:
             self.clock.tick(60)
             self.handle_blit()
             self.handle_events()
+            self.check_flips()
             pg.display.update()
 
     def quit_game(self):
