@@ -6,23 +6,22 @@ from utils import get_resource_path
 class Game:
     def __init__(self):
         # Game Attributes
-        self.SCREEN_WIDTH = 800
-        self.SCREEN_HEIGHT = 600
+        self.SCREEN_WIDTH: int = 800
+        self.SCREEN_HEIGHT: int = 600
 
-        self.running = True
-        self.is_game_started = False
-        self.is_game_ended = False
-        self.cards = []
-        self.back_card = None
-        self.flip_count = 0
-        self.cards_fipped = 0
+        self.running: bool = True
+        self.is_game_started: bool = False
+        self.is_game_ended: bool = False
+        self.cards: list[Card] = []
+        self.flip_count: int = 0
+        self.cards_fipped: int = 0
 
-        self.clock = pg.time.Clock()
-        self.font = pg.font.Font(get_resource_path("./assets/Font/CaveatBrush.ttf"), 28)
+        self.clock: pg.time.Clock = pg.time.Clock()
+        self.font: pg.font.Font = pg.font.Font(get_resource_path("./assets/Font/CaveatBrush.ttf"), 28)
 
         # Images
-        self.logo = pg.image.load(get_resource_path("./assets/Images/Logo.png"))
-        self.bg = pg.transform.rotate(pg.transform.scale_by(pg.image.load(get_resource_path("./assets/Images/Game-BG.png")), 0.5), 90.0)
+        self.logo: pg.Surface = pg.image.load(get_resource_path("./assets/Images/Logo.png"))
+        self.bg: pg.Surface = pg.transform.rotate(pg.transform.scale_by(pg.image.load(get_resource_path("./assets/Images/Game-BG.png")), 0.5), 90.0)
 
         # Function calls
         self.create_window()
@@ -41,10 +40,7 @@ class Game:
             col = 1
             for card in self.cards:
                 card.rect = card.img.get_rect(center=(self.SCREEN_WIDTH // 5 * row, self.SCREEN_HEIGHT // 4 * col - 80 + (40 * col)))
-                if card.is_flipped:
-                    self.window.blit(card.img, card.rect)
-                else:
-                    self.window.blit(self.back_card.img, card.rect)
+                self.window.blit(card.get_card_face(), card.rect)
                 col += 1
                 if col == 4:
                     col = 1
@@ -142,12 +138,10 @@ class Game:
         cards = ["Apple", "Grape", "Lime", "Orange", "Strawberry", "Watermelon"]
 
         for card in cards:
-            self.cards.append(Card(card, get_resource_path(f"./assets/Images/{card}.png")))
-            self.cards.append(Card(card, get_resource_path(f"./assets/Images/{card}.png")))
+            self.cards.append(Card(card, get_resource_path(f"./assets/Images/{card}.png"), get_resource_path("./assets/Images/Back-View.png")))
+            self.cards.append(Card(card, get_resource_path(f"./assets/Images/{card}.png"), get_resource_path("./assets/Images/Back-View.png")))
         
         random.shuffle(self.cards)
-
-        self.back_card = Card("Cover", get_resource_path("./assets/Images/Back-View.png"))
 
     def check_flips(self):
         if self.flip_count == 2:
@@ -171,7 +165,6 @@ class Game:
         self.is_game_started = True
         self.is_game_ended = False
         self.cards = []
-        self.back_card = None
         self.flip_count = 0
         self.cards_fipped = 0
         self.create_cards()
@@ -180,7 +173,6 @@ class Game:
         self.is_game_started = False
         self.is_game_ended = False
         self.cards = []
-        self.back_card = None
         self.flip_count = 0
         self.cards_fipped = 0
 
