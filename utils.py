@@ -1,6 +1,6 @@
 import os, sys
 
-def get_resource_path(path):
+def get_resource_path(path: str) -> str:
     if getattr(sys, 'frozen', False):
         base_path = sys._MEIPASS
     else:
